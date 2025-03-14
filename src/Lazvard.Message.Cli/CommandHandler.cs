@@ -45,15 +45,36 @@ public static class CommandHandler
         rootCommand.AddOption(initConfigOption);
         rootCommand.AddOption(selfTestOption);
 
-        rootCommand.SetHandler((configPath, isSilent, initConfig, selfTest) =>
+        rootCommand.SetHandler(async (configPath, isSilent, initConfig, selfTest) =>
         {
-            if (selfTest)
+            // Check if config.toml exists and read it if it does
+            if (string.IsNullOrEmpty(configPath) && File.Exists("config.toml"))
             {
-                return RunSelfTest(configPath, loggerFactory);
+                configPath = "config.toml";
+            }
+
+            CliConfig? config = null;
+            if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+            {
+                var result = Configuration.Read(configPath);
+                if (result.IsSuccess)
+                {
+                    config = result.Value;
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to read configuration: {result.Error}");
+                    return;
+                }
+            }
+
+            if ((selfTest) ||(config.SelfTestEnabled))
+            {
+                await RunSelfTest(config, loggerFactory);
             }
             else
             {
-                return RunServer(new AMQPServerParameters(configPath, isSilent, initConfig), loggerFactory);
+                await RunServer(new AMQPServerParameters(configPath, isSilent, initConfig), loggerFactory);
             }
         }, configOption, silentOption, initConfigOption, selfTestOption);
 
@@ -96,12 +117,18 @@ public static class CommandHandler
         broker.Stop();
     }
 
-    public static async Task RunSelfTest(string? configPath, ILoggerFactory loggerFactory)
+    public static async Task RunSelfTest(CliConfig? config, ILoggerFactory loggerFactory)
     {
-        var parameters = new AMQPServerParameters(configPath, true, false);
-        var (config, certificate) = await AMQPServerHandler.StartAsync(parameters);
+        if (config == null)
+        {
+            Console.WriteLine("Configuration is required for self-test.");
+            return;
+        }
 
-        Console.WriteLine($"Running self-test on Lajvard ServiceBus service at http://{config.IP}:{config.Port}");
+        var parameters = new AMQPServerParameters(configPath: null, isSilent: false, initConfigFile: false);
+        var (serverConfig, certificate) = await AMQPServerHandler.StartAsync(parameters);
+
+        Console.WriteLine($"Running self-test on Lajvard ServiceBus service at http://{serverConfig.IP}:{serverConfig.Port}");
         Console.WriteLine();
 
         if (!config.SelfTestEnabled)
@@ -114,7 +141,7 @@ public static class CommandHandler
         var topicName = config.SelfTestTopicName;
         var subscriptionName = config.SelfTestSubscriptionName;
 
-        string connectionString = $"Endpoint=sb://{config.IP}{(!config.UseHttps ? $":{config.Port}" : string.Empty)}/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+        string connectionString = $"Endpoint=sb://{serverConfig.IP}{(!serverConfig.UseHttps ? $":{serverConfig.Port}" : string.Empty)}/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=true;";
 
         var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
         {

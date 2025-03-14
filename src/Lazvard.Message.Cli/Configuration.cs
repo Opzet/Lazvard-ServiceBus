@@ -251,6 +251,14 @@ public sealed class Configuration
 
         try
         {
+
+            //config.toml contents
+            //{{Server = { IP = "0.0.0.0", Port = 5672, UseHttps = false, CertificatePath = "", CertificatePassword = "" },
+            //AMQP = { ConnectionIdleTimeOut = 240000, MaxFrameSize = 65536, MaxMessageSize = 67108864 },
+            //Queues = [ { Name = "queue-1", MaxDeliveryCount = 50, LockDuration = "PT1M" } ],
+            //Topics = [ { Name = "topic-1", Subscriptions = [ { Name = "topic-1-subscription-a", MaxDeliveryCount = 50, LockDuration = "PT1M" } ] }, { Name = "topic-2", Subscriptions = [ { Name = "topic-2-subscription-a", MaxDeliveryCount = 50, LockDuration = "PT1M" }, { Name = "topic-2-subscription-b", MaxDeliveryCount = 50, LockDuration = "PT1M" } ] } ],
+            //SelfTest = { Enabled = true, MessageCount = 10, TopicName = "topic-1", SubscriptionName = "topic-1-subscription-a" } }}
+
             var result = new CliConfig();
 
             result.IP = config[ConfigurationSections.Server][nameof(BrokerConfig.IP)]?.AsString ?? result.IP;
@@ -268,8 +276,18 @@ public sealed class Configuration
             result.MaxMessageSize = (uint?)config[ConfigurationSections.AMQP][nameof(BrokerConfig.MaxMessageSize)]?.AsInteger
                 ?? result.MaxMessageSize;
 
+
+            // Not working - not finding SelfTestEnabled , Enabled value?
+
+            string Enabledkey = "Enabled"; // nameof(CliConfig.SelfTestEnabled);
+            var node = config["SelfTest"][Enabledkey]; ;
+            result.SelfTestEnabled = node?.AsBoolean ?? result.SelfTestEnabled;
+
             result.SelfTestEnabled = config["SelfTest"][nameof(CliConfig.SelfTestEnabled)]?.AsBoolean ?? result.SelfTestEnabled;
+
+            string SelfTestMessageCountkey = nameof(CliConfig.SelfTestMessageCount);
             result.SelfTestMessageCount = config["SelfTest"][nameof(CliConfig.SelfTestMessageCount)]?.AsInteger ?? result.SelfTestMessageCount;
+
             result.SelfTestTopicName = config["SelfTest"][nameof(CliConfig.SelfTestTopicName)]?.AsString ?? result.SelfTestTopicName;
             result.SelfTestSubscriptionName = config["SelfTest"][nameof(CliConfig.SelfTestSubscriptionName)]?.AsString ?? result.SelfTestSubscriptionName;
 

@@ -3,7 +3,7 @@ Lazvard Message is an AMQP server simulator that is **unofficially** compatible 
 ## Setup
 
 ``` 
-string connectionString = "Endpoint=sb://192.168.100.75:5671/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+string connectionString = "Endpoint=sb://192.168.100.75:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
 ```
 
 ### Docker
@@ -11,9 +11,9 @@ string connectionString = "Endpoint=sb://192.168.100.75:5671/;SharedAccessKeyNam
 Create an empty folder and map it to the container for configuration storage. The container will generate a default config file upon its first run. After making any modifications, restart the container.
 
 ```bash
-docker run -p 5671:5671 -v ./config:/App/config pejmann/lazvard-message
+docker run -p 5672:5672 -v ./config:/App/config pejmann/lazvard-message
 
-podman run -p 5671:5671 -v ./config:/App/config pejmann/lazvard-message
+podman run -p 5672:5672 -v ./config:/App/config pejmann/lazvard-message
 ```
 
 ### Manual Build
