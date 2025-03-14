@@ -253,7 +253,7 @@ public sealed class Configuration
         {
 
             //config.toml contents
-            //{{Server = { IP = "0.0.0.0", Port = 5672, UseHttps = false, CertificatePath = "", CertificatePassword = "" },
+            //{{Server = { IP = "0.0.0.0", Port = 5671, UseHttps = false, CertificatePath = "", CertificatePassword = "" },
             //AMQP = { ConnectionIdleTimeOut = 240000, MaxFrameSize = 65536, MaxMessageSize = 67108864 },
             //Queues = [ { Name = "queue-1", MaxDeliveryCount = 50, LockDuration = "PT1M" } ],
             //Topics = [ { Name = "topic-1", Subscriptions = [ { Name = "topic-1-subscription-a", MaxDeliveryCount = 50, LockDuration = "PT1M" } ] }, { Name = "topic-2", Subscriptions = [ { Name = "topic-2-subscription-a", MaxDeliveryCount = 50, LockDuration = "PT1M" }, { Name = "topic-2-subscription-b", MaxDeliveryCount = 50, LockDuration = "PT1M" } ] } ],

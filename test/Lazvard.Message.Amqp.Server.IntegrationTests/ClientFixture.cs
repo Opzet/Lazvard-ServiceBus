@@ -8,7 +8,7 @@ public sealed class ClientFixture : IAsyncDisposable
 
     public ClientFixture()
     {
-        string connectionString = "Endpoint=sb://127.0.0.1:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+        string connectionString = "Endpoint=sb://127.0.0.1:5671/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
         Client = new(connectionString);
     }
 

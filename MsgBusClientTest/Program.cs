@@ -47,7 +47,7 @@ namespace MsgBusClientTest
                     -Direction Inbound `
                     -Action Allow `
                     -Protocol TCP `
-                    -LocalPort 5672 `
+                    -LocalPort 5671 `
                     -Enabled True
             */
 
@@ -61,7 +61,7 @@ namespace MsgBusClientTest
                     ContentType = "application/json"
                 };
 
-                string connectionString = "Endpoint=sb://127.0.0.1:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+                string connectionString = "Endpoint=sb://127.0.0.1:5671/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
                 var topicName = "Topic1";
                 var subscriptionName = "Subscription1";
 

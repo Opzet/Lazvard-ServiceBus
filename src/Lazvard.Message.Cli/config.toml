@@ -1,6 +1,6 @@
 ﻿[Server]
 IP = "127.0.0.1" # IP to listen on
-Port = 5672 # Port to listen on
+Port = 5671 # Port to listen on
 UseHttps = false # use Https with a valid certificate, default is false
 CertificatePath = "" # The path to trusted X.509 certificate (PFX - PKCS #12), required only when UseBuiltInCertificateManager is false
 CertificatePassword = "" # The certificate password, optional
