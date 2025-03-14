@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Amqp;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using System.Text;
 
 namespace MsgBusClientTest
 {
@@ -20,7 +23,7 @@ namespace MsgBusClientTest
                 switch (input)
                 {
                     case "1":
-                        SendMessage();
+                        SendMessage().GetAwaiter().GetResult();
                         break;
                     case "2":
                         exit = true;
@@ -30,29 +33,78 @@ namespace MsgBusClientTest
                         break;
                 }
             }
-
         }
 
-
-        static void SendMessage()
+        static async Task SendMessage()
         {
-            var message = AmqpMessage.Create();
-            Console.WriteLine("Sending Message.");
+            // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/servicebus/Azure.Messaging.ServiceBus/TROUBLESHOOTING.md#handle-service-bus-exceptions
+            // https://aka.ms/azsdk/net/servicebus/exceptions/troubleshoot.
 
-            message.Properties.MessageId = Guid.NewGuid().ToString();
-            message.Properties.To = "amqps://127.0.0.1";
-            message.Properties.Subject = "test";
-            message.Properties.CreationTime = DateTime.UtcNow;
-            message.Properties.ContentType = "application/json";
-            message.Properties.ContentEncoding = "utf-8";
+            /*
+                // PowerShell open Port
+                New-NetFirewallRule -DisplayName "_CamcoAzureServiceBus" `
+                    -Direction Inbound `
+                    -Action Allow `
+                    -Protocol TCP `
+                    -LocalPort 5672 `
+                    -Enabled True
+            */
 
-            message.PrepareForSend();
+            try
+            {
+                var messageBody = "Hello, World!";
+                var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(messageBody))
+                {
+                    MessageId = Guid.NewGuid().ToString(),
+                    Subject = "test",
+                    ContentType = "application/json",
+                };
 
-            // Send the message
-            
+                string connectionString = "Endpoint=sb://localhost:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
 
-            //Get Errors
-            Console.WriteLine("Message sent.");
+                // topic-1/topic-1-subscription-a
+                var topicName = "topic1";
+                var subscriptionName = "topic-1-subscription-a"; // "Subscription1";
+
+                var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
+                {
+                    TransportType = ServiceBusTransportType.AmqpTcp
+                });
+
+                var sender = client.CreateSender(topicName);
+                await sender.SendMessageAsync(message);
+
+                Console.WriteLine("Message sent successfully.");
+
+                // Dead-lettering logic
+                var maxDeliveryCount = 10; // Example value, adjust as needed
+                var receiver = client.CreateReceiver(topicName, subscriptionName);
+
+                for (var i = 0; i < maxDeliveryCount; i++)
+                {
+                    var receivedMessages = await receiver.ReceiveMessagesAsync(1);
+                    if (receivedMessages.Any())
+                    {
+                        await receiver.AbandonMessageAsync(receivedMessages[0]);
+                    }
+                }
+
+                var deadLetterReceiver = client.CreateReceiver(topicName, subscriptionName, new ServiceBusReceiverOptions
+                {
+                    SubQueue = SubQueue.DeadLetter,
+                    ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+                });
+
+                var deadLetterMessages = await deadLetterReceiver.ReceiveMessagesAsync(1);
+                if (deadLetterMessages.Any())
+                {
+                    Console.WriteLine("Message moved to dead-letter queue.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex.Message}");
+            }
         }
     }
 }
