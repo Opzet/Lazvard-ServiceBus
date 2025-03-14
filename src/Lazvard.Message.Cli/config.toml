@@ -1,6 +1,6 @@
 ﻿[Server]
 IP = "0.0.0.0" # IP to listen on
-Port = 5672 # Port to listen on
+Port = 5671 # Port to listen on
 UseHttps = false # use Https with a valid certificate, default is false
 CertificatePath = "" # The path to trusted X.509 certificate (PFX - PKCS #12), required only when UseBuiltInCertificateManager is false
 CertificatePassword = "" # The certificate password, optional
@@ -33,3 +33,9 @@ LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default
 Name = "topic-2-subscription-b" # Subscription name
 MaxDeliveryCount = 50 # Number of maximum deliveries. The default value is 50 times
 LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default value is 1 minute
+
+[SelfTest]
+Enabled = true # Enable or disable self-test
+MessageCount = 10 # Number of messages to send during self-test
+TopicName = "topic-1" # Topic name for self-test
+SubscriptionName = "topic-1-subscription-a" # Subscription name for self-test

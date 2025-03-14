@@ -11,6 +11,12 @@ public class CliConfig : BrokerConfig
     public string CertificatePath { get; set; } = string.Empty;
     public string CertificatePassword { get; set; } = string.Empty;
     public bool UseHttps { get; set; } = false;
+
+    // Self-test settings
+    public bool SelfTestEnabled { get; set; } = false;
+    public int SelfTestMessageCount { get; set; } = 10;
+    public string SelfTestTopicName { get; set; } = "topic-1";
+    public string SelfTestSubscriptionName { get; set; } = "topic-1-subscription-a";
 }
 
 internal static class ConfigurationSections
@@ -34,7 +40,6 @@ public sealed class Configuration
         {
             [ConfigurationSections.Server] =
             {
-
                 [nameof(BrokerConfig.IP)] = new TomlString
                 {
                     Value = config.IP,
@@ -79,6 +84,29 @@ public sealed class Configuration
                     Comment = "Max AMQP message size in byte, default is 64MiB"
                 },
             },
+            ["SelfTest"] =
+            {
+                [nameof(CliConfig.SelfTestEnabled)] = new TomlBoolean
+                {
+                    Value = config.SelfTestEnabled,
+                    Comment = "Enable or disable self-test"
+                },
+                [nameof(CliConfig.SelfTestMessageCount)] = new TomlInteger
+                {
+                    Value = config.SelfTestMessageCount,
+                    Comment = "Number of messages to send during self-test"
+                },
+                [nameof(CliConfig.SelfTestTopicName)] = new TomlString
+                {
+                    Value = config.SelfTestTopicName,
+                    Comment = "Topic name for self-test"
+                },
+                [nameof(CliConfig.SelfTestSubscriptionName)] = new TomlString
+                {
+                    Value = config.SelfTestSubscriptionName,
+                    Comment = "Subscription name for self-test"
+                },
+            }
         };
 
         toml.WriteTo(writer);
@@ -100,7 +128,6 @@ public sealed class Configuration
 
         foreach (var topic in config.Topics)
         {
-
             var isQueue = topic.Subscriptions.Count() == 1 && string.IsNullOrEmpty(topic.Subscriptions.First().Name);
 
             if (isQueue)
@@ -132,7 +159,8 @@ public sealed class Configuration
                     [nameof(TopicConfig.Subscriptions)] = subscriptionsArray,
                 });
             }
-        };
+        }
+        ;
 
         toml.WriteTo(writer);
         await writer.FlushAsync();
@@ -239,6 +267,11 @@ public sealed class Configuration
 
             result.MaxMessageSize = (uint?)config[ConfigurationSections.AMQP][nameof(BrokerConfig.MaxMessageSize)]?.AsInteger
                 ?? result.MaxMessageSize;
+
+            result.SelfTestEnabled = config["SelfTest"][nameof(CliConfig.SelfTestEnabled)]?.AsBoolean ?? result.SelfTestEnabled;
+            result.SelfTestMessageCount = config["SelfTest"][nameof(CliConfig.SelfTestMessageCount)]?.AsInteger ?? result.SelfTestMessageCount;
+            result.SelfTestTopicName = config["SelfTest"][nameof(CliConfig.SelfTestTopicName)]?.AsString ?? result.SelfTestTopicName;
+            result.SelfTestSubscriptionName = config["SelfTest"][nameof(CliConfig.SelfTestSubscriptionName)]?.AsString ?? result.SelfTestSubscriptionName;
 
             var defaultTopicConf = new TopicSubscriptionConfig("");
             var queues = config[nameof(ConfigurationSections.Queues)]

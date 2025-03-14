@@ -1,6 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using System.Net.Sockets;
 using System.Text;
 
 namespace MsgBusClientTest
@@ -57,14 +58,12 @@ namespace MsgBusClientTest
                 {
                     MessageId = Guid.NewGuid().ToString(),
                     Subject = "test",
-                    ContentType = "application/json",
+                    ContentType = "application/json"
                 };
 
-                string connectionString = "Endpoint=sb://localhost:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
-
-                // topic-1/topic-1-subscription-a
-                var topicName = "topic1";
-                var subscriptionName = "topic-1-subscription-a"; // "Subscription1";
+                string connectionString = "Endpoint=sb://127.0.0.1:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+                var topicName = "Topic1";
+                var subscriptionName = "Subscription1";
 
                 var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
                 {
@@ -101,9 +100,25 @@ namespace MsgBusClientTest
                     Console.WriteLine("Message moved to dead-letter queue.");
                 }
             }
+            catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.ServiceCommunicationProblem)
+            {
+                Console.WriteLine($"ServiceBusException: {ex.Message}");
+                //Console.WriteLine($"ErrorCode: {ex.ErrorCode}");
+                Console.WriteLine($"IsTransient: {ex.IsTransient}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                Console.WriteLine("For troubleshooting information, see https://aka.ms/azsdk/net/servicebus/exceptions/troubleshoot.");
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine($"SocketException: {ex.Message}");
+                Console.WriteLine($"ErrorCode: {ex.ErrorCode}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                Console.WriteLine("Check network connectivity and firewall settings.");
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending message: {ex.Message}");
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
             }
         }
     }

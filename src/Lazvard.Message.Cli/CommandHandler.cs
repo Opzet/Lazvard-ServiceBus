@@ -3,6 +3,8 @@ using Lazvard.Message.Amqp.Server.Helpers;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using System.CommandLine;
+using Azure.Messaging.ServiceBus;
+using System.Text;
 
 namespace Lazvard.Message.Cli;
 
@@ -32,14 +34,28 @@ public static class CommandHandler
         configOption.AddAlias("-c");
         configOption.IsRequired = false;
 
+        var selfTestOption = new Option<bool>(
+            name: "--self-test",
+            description: "Run self-test to validate service functionality");
+        selfTestOption.AddAlias("-st");
+        selfTestOption.IsRequired = false;
+
         rootCommand.AddOption(configOption);
         rootCommand.AddOption(silentOption);
         rootCommand.AddOption(initConfigOption);
+        rootCommand.AddOption(selfTestOption);
 
-        rootCommand.SetHandler((configPath, isSilent, initConfig) =>
+        rootCommand.SetHandler((configPath, isSilent, initConfig, selfTest) =>
         {
-            return RunServer(new AMQPServerParameters(configPath, isSilent, initConfig), loggerFactory);
-        }, configOption, silentOption, initConfigOption);
+            if (selfTest)
+            {
+                return RunSelfTest(configPath, loggerFactory);
+            }
+            else
+            {
+                return RunServer(new AMQPServerParameters(configPath, isSilent, initConfig), loggerFactory);
+            }
+        }, configOption, silentOption, initConfigOption, selfTestOption);
 
         await rootCommand.InvokeAsync(args);
     }
@@ -78,7 +94,62 @@ public static class CommandHandler
         await exitEvent.WaitAsync(default);
         source.Cancel();
         broker.Stop();
-
-        Console.WriteLine("Lajvard ServiceBus service successfully closed");
     }
+
+    public static async Task RunSelfTest(string? configPath, ILoggerFactory loggerFactory)
+    {
+        var parameters = new AMQPServerParameters(configPath, true, false);
+        var (config, certificate) = await AMQPServerHandler.StartAsync(parameters);
+
+        Console.WriteLine($"Running self-test on Lajvard ServiceBus service at http://{config.IP}:{config.Port}");
+        Console.WriteLine();
+
+        if (!config.SelfTestEnabled)
+        {
+            Console.WriteLine("Self-test is disabled in the configuration.");
+            return;
+        }
+
+        var messageCount = config.SelfTestMessageCount;
+        var topicName = config.SelfTestTopicName;
+        var subscriptionName = config.SelfTestSubscriptionName;
+
+        string connectionString = $"Endpoint=sb://{config.IP}{(!config.UseHttps ? $":{config.Port}" : string.Empty)}/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+
+        var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
+        {
+            TransportType = ServiceBusTransportType.AmqpTcp
+        });
+
+        var sender = client.CreateSender(topicName);
+        var receiver = client.CreateReceiver(topicName, subscriptionName);
+
+        for (int i = 0; i < messageCount; i++) // Example loop count, adjust as needed
+        {
+            var messageBody = $"Test message {i + 1}";
+            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(messageBody))
+            {
+                MessageId = Guid.NewGuid().ToString(),
+                Subject = "test",
+                ContentType = "application/json"
+            };
+
+            await sender.SendMessageAsync(message);
+            Console.WriteLine($"Message {i + 1} sent successfully.");
+
+            var receivedMessages = await receiver.ReceiveMessagesAsync(1);
+            if (receivedMessages.Any())
+            {
+                Console.WriteLine($"Message {i + 1} received: {Encoding.UTF8.GetString(receivedMessages[0].Body)}");
+                await receiver.CompleteMessageAsync(receivedMessages[0]);
+            }
+            else
+            {
+                Console.WriteLine($"Message {i + 1} not received.");
+            }
+        }
+
+        Console.WriteLine("Self-test completed.");
+    }
+
 }
