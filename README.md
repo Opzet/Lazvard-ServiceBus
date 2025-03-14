@@ -2,6 +2,10 @@ Lazvard Message is an AMQP server simulator that is **unofficially** compatible 
 
 ## Setup
 
+``` 
+string connectionString = "Endpoint=sb://192.168.100.75:5671/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=1;UseDevelopmentEmulator=false;";
+```
+
 ### Docker
 
 Create an empty folder and map it to the container for configuration storage. The container will generate a default config file upon its first run. After making any modifications, restart the container.

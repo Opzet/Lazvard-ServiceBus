@@ -20,6 +20,7 @@
     <Authors>Pejman Nikram</Authors>
     <Description>lightweight AMQP server - Azure Service Bus simulator</Description>
     <PackageTags>amqp;service-bus;azure-service-bus;amqp-server</PackageTags>
+	<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <Version>0.6.0</Version>
   </PropertyGroup>
 
@@ -58,6 +59,18 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config.toml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Service_Install_MessageBus.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Service_Edit_MessageBus.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

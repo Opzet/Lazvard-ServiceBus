@@ -14,7 +14,7 @@ AnsiConsole.Write(
     .Color(Color.Blue3_1)
     );
 AnsiConsole.WriteLine("");
-AnsiConsole.WriteLine("  ServiceBus Simulation");
+AnsiConsole.WriteLine("  Azure ServiceBus Simulation");
 AnsiConsole.Write(new Rule());
 AnsiConsole.WriteLine("");
 

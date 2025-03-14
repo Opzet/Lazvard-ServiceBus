@@ -1,0 +1,35 @@
+﻿[Server]
+IP = "127.0.0.1" # IP to listen on
+Port = 5672 # Port to listen on
+UseHttps = false # use Https with a valid certificate, default is false
+CertificatePath = "" # The path to trusted X.509 certificate (PFX - PKCS #12), required only when UseBuiltInCertificateManager is false
+CertificatePassword = "" # The certificate password, optional
+
+[AMQP]
+ConnectionIdleTimeOut = 240000 # Connection idle timeout in milliseconds for AMQP connection, default is 4 minutes
+MaxFrameSize = 65536 # Max AMQP frame size in byte, default is 64Kib
+MaxMessageSize = 67108864 # Max AMQP message size in byte, default is 64MiB
+
+[[Queues]]
+Name = "queue-1" # Queue name
+MaxDeliveryCount = 50 # Number of maximum deliveries. The default value is 50 times
+LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default value is 1 minute
+
+[[Topics]]
+Name = "topic-1" # Topic name
+[[Topics.Subscriptions]]
+Name = "topic-1-subscription-a" # Subscription name
+MaxDeliveryCount = 50 # Number of maximum deliveries. The default value is 50 times
+LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default value is 1 minute
+
+[[Topics]]
+Name = "topic-2" # Topic name
+[[Topics.Subscriptions]]
+Name = "topic-2-subscription-a" # Subscription name
+MaxDeliveryCount = 50 # Number of maximum deliveries. The default value is 50 times
+LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default value is 1 minute
+
+[[Topics.Subscriptions]]
+Name = "topic-2-subscription-b" # Subscription name
+MaxDeliveryCount = 50 # Number of maximum deliveries. The default value is 50 times
+LockDuration = "PT1M" # ISO 8061 lock duration for the subscription. The default value is 1 minute

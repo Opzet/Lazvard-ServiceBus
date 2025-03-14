@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsgBusClientTest", "MsgBusClientTest\MsgBusClientTest.csproj", "{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,12 @@ Global
 		{CC8E4973-E5DD-49A4-BE1C-8E6D85FBDA47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC8E4973-E5DD-49A4-BE1C-8E6D85FBDA47}.Signed|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC8E4973-E5DD-49A4-BE1C-8E6D85FBDA47}.Signed|Any CPU.Build.0 = Debug|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{FB2F5E94-63F4-4DCE-BB96-F2EC3382C777}.Signed|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
