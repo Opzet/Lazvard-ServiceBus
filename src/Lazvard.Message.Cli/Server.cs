@@ -3,6 +3,9 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Lazvard.Message.Cli;
@@ -17,7 +20,7 @@ public sealed class Server
         this.loggerFactory = loggerFactory;
         this.nodeFactory = nodeFactory;
     }
-
+  
     public Broker Start(CliConfig config, X509Certificate2? certificate)
     {
         var amqpSettings = new AmqpSettings();

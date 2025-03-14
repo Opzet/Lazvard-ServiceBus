@@ -5,6 +5,9 @@ using Spectre.Console;
 using System.CommandLine;
 using Azure.Messaging.ServiceBus;
 using System.Text;
+using System.Net;
+using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace Lazvard.Message.Cli;
 
@@ -137,6 +140,11 @@ public static class CommandHandler
             return;
         }
 
+        // serverConfig.IP
+        var ip = IPAddress.TryParse(serverConfig.IP, out var serverIP) ? serverIP : LocalIPAddress();
+
+        IsPortAvailable(ip,  serverConfig.Port);
+
         var messageCount = config.SelfTestMessageCount;
         var topicName = config.SelfTestTopicName;
         var subscriptionName = config.SelfTestSubscriptionName;
@@ -179,4 +187,72 @@ public static class CommandHandler
         Console.WriteLine("Self-test completed.");
     }
 
+    public static IPAddress GetLocalIPAddress()
+    {
+        Debug.WriteLine("Attempting to retrieve local IP Address.");
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                Debug.WriteLine($"Local IPv4 address found: {ip}");
+                return ip;
+            }
+        }
+        Debug.WriteLine("No network adapters with an IPv4 address in the system. Throwing exception.");
+        throw new Exception("No network adapters with an IPv4 address in the system!");
+    }
+
+
+    public static IPAddress LocalIPAddress()
+    {
+        //return GetLocalIPAddress();
+        return new IPAddress(new byte[] { 127, 0, 0, 1 });
+
+        //get
+        //{
+        //    switch (HostingEnvironment.HostingMode)
+        //    {
+        //        case Deployment.OLDSERVER:
+        //            return new IPAddress(new byte[] { 192, 168, 100, 16 });
+        //        case Deployment.PRODUCTION:
+        //            return new IPAddress(new byte[] { 192, 168, 100, 171 });
+        //        case Deployment.Testing:
+        //            return new IPAddress(new byte[] { 192, 168, 100, 75 });
+        //        case Deployment.Development_UiAndApi:
+        //return new IPAddress(new byte[] { 127, 0, 0, 1 });
+        //        case Deployment.Development_OnlyUi_UsingTestWebApi:
+        //            return new IPAddress(new byte[] { 192, 168, 100, 75 });
+
+        //        default:
+        //            throw new Exception("Invalid Hosting Mode, cant get local IP");
+        //    }
+        //}
+    }
+
+    /// <summary>
+    /// Checks if a given port is available on the local machine.
+    /// </summary>
+    /// <param name="port">The port number to check.</param>
+    /// <returns><c>true</c> if the port is available; otherwise, <c>false</c>.</returns>
+    public static bool IsPortAvailable(IPAddress serverIP, int port)
+    {
+        TcpListener tcpListener = null;
+        try
+        {
+            tcpListener = new TcpListener(serverIP, port);
+            tcpListener.Start();
+            Console.WriteLine($"local {serverIP.ToString()} : port {port} is available.");
+            return true;
+        }
+        catch (SocketException ex)
+        {
+            Console.WriteLine($"local {serverIP.ToString()} : port {port} is not available. Exception: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            tcpListener?.Stop();
+        }
+    }
 }

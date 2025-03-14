@@ -18,5 +18,4 @@ AnsiConsole.WriteLine("  Azure ServiceBus Simulation");
 AnsiConsole.Write(new Rule());
 AnsiConsole.WriteLine("");
 
-
 await CommandHandler.Handle(args, loggerFactory);
